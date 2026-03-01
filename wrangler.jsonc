@@ -1,0 +1,31 @@
+{
+	"name": "john-deere-mcp",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-04-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MCP_OBJECT",
+				"class_name": "JohnDeereMCP"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"JohnDeereMCP"
+			]
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "OAUTH_KV",
+			"id": "ee66b105654a4d39805fdcba46c2e080",
+			"remote": true
+		}
+	]
+}

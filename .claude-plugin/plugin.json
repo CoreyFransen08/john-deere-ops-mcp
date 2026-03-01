@@ -1,0 +1,9 @@
+{
+  "name": "john-deere-ops-center",
+  "version": "1.0.0",
+  "description": "Connect to John Deere Operations Center to browse organizations, fields, and field operations data via a remote MCP server.",
+  "author": {
+    "name": "Corey Fransen"
+  },
+  "keywords": ["agriculture", "john-deere", "fields", "farming", "operations-center"]
+}

@@ -1,0 +1,7 @@
+.dev.vars
+node_modules
+.env
+/.wrangler
+/.claude
+package-lock.json
+package-lock.json

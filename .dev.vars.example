@@ -1,0 +1,6 @@
+# John Deere OAuth credentials (from developer.deere.com)
+JD_CLIENT_ID=your-application-id
+JD_CLIENT_SECRET=your-application-secret
+
+# Used for signing session cookies (generate a random 32+ char string)
+COOKIE_ENCRYPTION_KEY=generate-a-random-secret-string-here

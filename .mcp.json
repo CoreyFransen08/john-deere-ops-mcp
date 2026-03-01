@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "john-deere": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://john-deere-mcp.cfransen.workers.dev/mcp"]
+    }
+  }
+}
