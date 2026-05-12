@@ -13,7 +13,7 @@ import {
   validateOAuthState,
 } from "./workers-oauth-utils";
 
-const SCOPES = "ag1 ag2 ag3 eq1 eq2 org1 org2 files offline_access";
+const SCOPES = "ag1 ag2 ag3 eq1 eq2 org1 org2 work1 work2 files offline_access";
 
 type Bindings = Env & { OAUTH_PROVIDER: OAuthHelpers };
 

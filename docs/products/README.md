@@ -1,0 +1,46 @@
+# John Deere Operations Center - Products API
+
+This archive contains markdown reference documents for all 38 endpoints in the Products API documentation.
+
+Source: https://developer.deere.com/dev-docs/products
+
+## Endpoint Index
+
+- **GET** `/organizations/{organizationId}/varieties` - [GET_organizations-organizationId-varieties.md](./GET_organizations-organizationId-varieties.md)
+- **POST** `/organizations/{organizationId}/varieties` - [POST_organizations-organizationId-varieties.md](./POST_organizations-organizationId-varieties.md)
+- **GET** `/organizations/{organizationId}/varieties/{erid}` - [GET_organizations-organizationId-varieties-erid.md](./GET_organizations-organizationId-varieties-erid.md)
+- **PUT** `/organizations/{organizationId}/varieties/{erid}` - [PUT_organizations-organizationId-varieties-erid.md](./PUT_organizations-organizationId-varieties-erid.md)
+- **POST** `/varieties/{erid}/associateToOrg/{organizationId}` - [POST_varieties-erid-associateToOrg-organizationId.md](./POST_varieties-erid-associateToOrg-organizationId.md)
+- **GET** `/varieties` - [GET_varieties.md](./GET_varieties.md)
+- **GET** `/varieties/{erid}` - [GET_varieties-erid.md](./GET_varieties-erid.md)
+- **GET** `/varieties/{erid}/documents` - [GET_varieties-erid-documents.md](./GET_varieties-erid-documents.md)
+- **PATCH** `/varieties/{erid}/setOverridesForOrg/{organizationId}` - [PATCH_varieties-erid-setOverridesForOrg-organizationId.md](./PATCH_varieties-erid-setOverridesForOrg-organizationId.md)
+- **GET** `/organizations/{organizationId}/chemicals` - [GET_organizations-organizationId-chemicals.md](./GET_organizations-organizationId-chemicals.md)
+- **POST** `/organizations/{organizationId}/chemicals` - [POST_organizations-organizationId-chemicals.md](./POST_organizations-organizationId-chemicals.md)
+- **GET** `/organizations/{organizationId}/chemicals/{erid}` - [GET_organizations-organizationId-chemicals-erid.md](./GET_organizations-organizationId-chemicals-erid.md)
+- **PUT** `/organizations/{organizationId}/chemicals/{erid}` - [PUT_organizations-organizationId-chemicals-erid.md](./PUT_organizations-organizationId-chemicals-erid.md)
+- **POST** `/chemicals/{erid}/associateToOrg/{organizationId}` - [POST_chemicals-erid-associateToOrg-organizationId.md](./POST_chemicals-erid-associateToOrg-organizationId.md)
+- **GET** `/chemicals` - [GET_chemicals.md](./GET_chemicals.md)
+- **GET** `/chemicals/{erid}` - [GET_chemicals-erid.md](./GET_chemicals-erid.md)
+- **GET** `/chemicals/{erid}/documents` - [GET_chemicals-erid-documents.md](./GET_chemicals-erid-documents.md)
+- **PATCH** `/chemicals/{erid}/setOverridesForOrg/{organizationId}` - [PATCH_chemicals-erid-setOverridesForOrg-organizationId.md](./PATCH_chemicals-erid-setOverridesForOrg-organizationId.md)
+- **GET** `/organizations/{organizationId}/fertilizers` - [GET_organizations-organizationId-fertilizers.md](./GET_organizations-organizationId-fertilizers.md)
+- **POST** `/organizations/{organizationId}/fertilizers` - [POST_organizations-organizationId-fertilizers.md](./POST_organizations-organizationId-fertilizers.md)
+- **GET** `/organizations/{organizationId}/fertilizers/{erid}` - [GET_organizations-organizationId-fertilizers-erid.md](./GET_organizations-organizationId-fertilizers-erid.md)
+- **PUT** `/organizations/{organizationId}/fertilizers/{erid}` - [PUT_organizations-organizationId-fertilizers-erid.md](./PUT_organizations-organizationId-fertilizers-erid.md)
+- **POST** `/fertilizers/{erid}/associateToOrg/{organizationId}` - [POST_fertilizers-erid-associateToOrg-organizationId.md](./POST_fertilizers-erid-associateToOrg-organizationId.md)
+- **GET** `/fertilizers` - [GET_fertilizers.md](./GET_fertilizers.md)
+- **GET** `/fertilizers/{erid}` - [GET_fertilizers-erid.md](./GET_fertilizers-erid.md)
+- **GET** `/fertilizers/{erid}/documents` - [GET_fertilizers-erid-documents.md](./GET_fertilizers-erid-documents.md)
+- **PATCH** `/fertilizers/{erid}/setOverridesForOrg/{organizationId}` - [PATCH_fertilizers-erid-setOverridesForOrg-organizationId.md](./PATCH_fertilizers-erid-setOverridesForOrg-organizationId.md)
+- **GET** `/organizations/{organizationId}/tankMixes` - [GET_organizations-organizationId-tankMixes.md](./GET_organizations-organizationId-tankMixes.md)
+- **POST** `/organizations/{organizationId}/tankMixes` - [POST_organizations-organizationId-tankMixes.md](./POST_organizations-organizationId-tankMixes.md)
+- **GET** `/organizations/{organizationId}/tankMixes/{id}` - [GET_organizations-organizationId-tankMixes-id.md](./GET_organizations-organizationId-tankMixes-id.md)
+- **PUT** `/organizations/{organizationId}/tankMixes/{id}` - [PUT_organizations-organizationId-tankMixes-id.md](./PUT_organizations-organizationId-tankMixes-id.md)
+- **POST** `/organizations/{organizationId}/dryBlends` - [POST_organizations-organizationId-dryBlends.md](./POST_organizations-organizationId-dryBlends.md)
+- **GET** `/organizations/{organizationId}/dryBlends` - [GET_organizations-organizationId-dryBlends.md](./GET_organizations-organizationId-dryBlends.md)
+- **GET** `/organizations/{organizationId}/dryBlends/{erid}` - [GET_organizations-organizationId-dryBlends-erid.md](./GET_organizations-organizationId-dryBlends-erid.md)
+- **PUT** `/organizations/{organizationId}/dryBlends/{erid}` - [PUT_organizations-organizationId-dryBlends-erid.md](./PUT_organizations-organizationId-dryBlends-erid.md)
+- **GET** `/organizations/{organizationId}/productCompanies` - [GET_organizations-organizationId-productCompanies.md](./GET_organizations-organizationId-productCompanies.md)
+- **GET** `/activeIngredients` - [GET_activeIngredients.md](./GET_activeIngredients.md)
+- **GET** `/documents/{erid}` - [GET_documents-erid.md](./GET_documents-erid.md)

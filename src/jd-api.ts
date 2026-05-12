@@ -7,6 +7,22 @@ const JD_WELL_KNOWN =
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+type FetchOptions = {
+  cache?: boolean;
+  ttlMs?: number;
+};
+
+type RequestOptions = {
+  method: "POST" | "PUT" | "DELETE" | "PATCH";
+  body?: unknown;
+};
+
+export type JDRequestResult<T = unknown> = {
+  status: number;
+  location: string | null;
+  data: T | null;
+};
+
 /**
  * Fetch the JD OAuth well-known configuration.
  */
@@ -72,18 +88,22 @@ function getCached(sql: SqlTagFn, key: string): unknown | null {
 /**
  * Store an API response in the DO SQLite cache.
  */
-function setCache(sql: SqlTagFn, key: string, data: unknown) {
+function setCache(sql: SqlTagFn, key: string, data: unknown, ttlMs = CACHE_TTL_MS) {
   const jsonData = JSON.stringify(data);
-  const expiresAt = Date.now() + CACHE_TTL_MS;
+  const expiresAt = Date.now() + ttlMs;
   sql`INSERT OR REPLACE INTO cache (key, data, expires_at) VALUES (${key}, ${jsonData}, ${expiresAt})`;
 }
 
 /**
  * Determines whether a given API path should be cached.
- * Field operations change frequently and are not cached.
+ * Field operations and work plans change frequently and are not cached.
  */
 function isCacheable(path: string): boolean {
-  return !path.includes("fieldOperations") && !path.includes("field-operations");
+  return (
+    !path.includes("fieldOperations") &&
+    !path.includes("field-operations") &&
+    !path.includes("workPlans")
+  );
 }
 
 /**
@@ -95,13 +115,15 @@ export async function jdFetch(
   path: string,
   props: JDProps,
   env: Env,
-  sql: SqlTagFn
+  sql: SqlTagFn,
+  options: FetchOptions = {}
 ): Promise<unknown> {
   const url = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
   console.log(`[jdFetch] GET ${url}`);
+  const shouldUseCache = options.cache !== false && isCacheable(url);
 
   // Check cache for cacheable paths
-  if (isCacheable(url)) {
+  if (shouldUseCache) {
     const cached = getCached(sql, url);
     if (cached) {
       console.log(`[jdFetch] cache HIT for ${url}`);
@@ -165,11 +187,71 @@ export async function jdFetch(
   }
 
   // Store in cache if cacheable
-  if (isCacheable(url)) {
-    setCache(sql, url, data);
+  if (shouldUseCache) {
+    setCache(sql, url, data, options.ttlMs);
   }
 
   return data;
+}
+
+/**
+ * Make an authenticated mutating request to the John Deere API.
+ * Automatically retries with a refreshed token on 401.
+ */
+export async function jdRequest<T = unknown>(
+  path: string,
+  props: JDProps,
+  env: Env,
+  options: RequestOptions
+): Promise<JDRequestResult<T>> {
+  const url = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
+  console.log(`[jdRequest] ${options.method} ${url}`);
+
+  const makeRequest = () =>
+    fetch(url, {
+      method: options.method,
+      headers: {
+        Authorization: `Bearer ${props.accessToken}`,
+        Accept: JD_ACCEPT,
+        "Accept-UOM-System": "METRIC",
+        ...(options.body === undefined ? {} : { "Content-Type": JD_ACCEPT }),
+      },
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    });
+
+  let res = await makeRequest();
+  console.log(`[jdRequest] response status: ${res.status} ${res.statusText}`);
+
+  if (res.status === 401 && props.refreshToken) {
+    console.log("[jdRequest] 401 received, attempting token refresh...");
+    try {
+      const refreshed = await refreshAccessToken(props, env);
+      props.accessToken = refreshed.access_token;
+      res = await makeRequest();
+      console.log(`[jdRequest] retry status: ${res.status} ${res.statusText}`);
+    } catch {
+      throw new Error("Session expired. Please re-authenticate.");
+    }
+  }
+
+  const location = res.headers.get("Location");
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[jdRequest] ERROR ${res.status}: ${text}`);
+    throw new Error(`John Deere API error (${res.status}): ${text}`);
+  }
+
+  if (res.status === 204) {
+    return { status: res.status, location, data: null };
+  }
+
+  const rawText = await res.text();
+  if (!rawText) {
+    return { status: res.status, location, data: null };
+  }
+
+  return { status: res.status, location, data: JSON.parse(rawText) as T };
 }
 
 /**
@@ -180,7 +262,8 @@ export async function jdFetchAll<T>(
   path: string,
   props: JDProps,
   env: Env,
-  sql: SqlTagFn
+  sql: SqlTagFn,
+  options: FetchOptions = {}
 ): Promise<T[]> {
   let url = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
   const allValues: T[] = [];
@@ -192,7 +275,7 @@ export async function jdFetchAll<T>(
     page++;
     console.log(`[jdFetchAll] page ${page}: ${url}`);
 
-    const data = (await jdFetch(url, props, env, sql)) as {
+    const data = (await jdFetch(url, props, env, sql, options)) as {
       values?: T[];
       total?: number;
       links?: Array<{ rel: string; uri: string }>;
