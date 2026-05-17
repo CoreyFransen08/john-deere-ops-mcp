@@ -1,6 +1,6 @@
 # John Deere Operations Center MCP Server
 
-A remote MCP server hosted on Cloudflare Workers that connects to John Deere Operations Center. Browse organizations, fields, and field operations data via any MCP-compatible client (Claude Desktop, Cursor, etc.).
+A remote MCP server hosted on Cloudflare Workers that connects to John Deere Operations Center. Browse organizations, fields, field operations, equipment, work plans, and more via any MCP-compatible client (Claude Desktop, Cursor, etc.).
 
 ## Architecture
 
@@ -13,30 +13,42 @@ This means authentication happens at the transport layer — no manual auth tool
 
 ## Setup
 
+### Prerequisites
+
+- A [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
+- A John Deere developer account with an application registered at [developer.deere.com](https://developer.deere.com)
+- Node.js 18+
+
 ### Quick setup (recommended)
 
-Prerequisites: a Cloudflare account, a John Deere developer account, and Node.js installed locally.
+```bash
+git clone <repo-url>
+cd john-deere-ops-center
+npm run setup
+```
 
-1. Clone the repo and `cd` into it.
-2. Run:
-   ```bash
-   npm run setup
-   ```
+The interactive setup script (`scripts/setup.mjs`) will walk you through every step:
 
-The setup script will:
+1. **Install dependencies** — runs `npm install`
+2. **Cloudflare login** — runs `wrangler login` in your browser
+3. **Create KV namespace** — creates the `OAUTH_KV` namespace and patches its ID into `wrangler.jsonc` automatically
+4. **Enter credentials** — prompts for your John Deere **Application ID** (`JD_CLIENT_ID`) and **Secret** (`JD_CLIENT_SECRET`), then pushes them as Cloudflare secrets along with an auto-generated `COOKIE_ENCRYPTION_KEY`
+5. **Deploy** — runs `wrangler deploy` and prints your Worker URL
 
-- install dependencies (which provides the Wrangler CLI),
-- run `wrangler login` to authenticate you with Cloudflare,
-- create the `OAUTH_KV` namespace and patch its id into `wrangler.jsonc`,
-- prompt you for your John Deere **Client ID** and **Client Secret** and push them to Cloudflare as secrets (along with an auto-generated `COOKIE_ENCRYPTION_KEY`),
-- run `wrangler deploy`,
-- print the MCP endpoint URL (`https://…/mcp`) and the redirect URI you must register at developer.deere.com (`https://…/callback`).
+At the end of setup, the script prints:
 
-Before the deployed Worker can complete an OAuth flow, register the printed `/callback` URL at [developer.deere.com](https://developer.deere.com) under **My Applications → your app → Redirect URIs**.
+```
+MCP endpoint:   https://<worker>.<subdomain>.workers.dev/mcp
+Redirect URI:   https://<worker>.<subdomain>.workers.dev/callback
+```
+
+**Register the redirect URI** at [developer.deere.com](https://developer.deere.com) under **My Applications → your app → Redirect URIs** before attempting to authenticate.
+
+> **First login:** After signing in with John Deere, you will be prompted to connect your Operations Center organization to the application. This is a required one-time step — the server detects it automatically and redirects you to `connections.deere.com` to complete the selection. See [`docs/oauth2-flow.md`](docs/oauth2-flow.md) for details.
 
 ### Manual setup
 
-If you'd rather run each step yourself, the equivalent commands are:
+If you prefer to run each step yourself:
 
 ```bash
 npm install
@@ -48,20 +60,20 @@ npx wrangler secret put COOKIE_ENCRYPTION_KEY
 npm run deploy
 ```
 
-Register a John Deere application at [developer.deere.com](https://developer.deere.com), copy the Application ID/Secret into the `wrangler secret put` prompts, and add `https://john-deere-mcp.<your-subdomain>.workers.dev/callback` as a redirect URI on the app.
+Register your application at [developer.deere.com](https://developer.deere.com) and add `https://<worker>.<subdomain>.workers.dev/callback` as a redirect URI.
 
 For local development, copy `.dev.vars.example` to `.dev.vars` and fill in the values.
 
-### 6. Connect an MCP Client
+### Connect an MCP Client
 
-Add to your client's MCP config (e.g. Claude Desktop `claude_desktop_config.json`):
+Add to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "john-deere": {
       "command": "npx",
-      "args": ["mcp-remote", "https://john-deere-mcp.<your-subdomain>.workers.dev/mcp"]
+      "args": ["mcp-remote", "https://<worker>.<subdomain>.workers.dev/mcp"]
     }
   }
 }
@@ -69,12 +81,43 @@ Add to your client's MCP config (e.g. Claude Desktop `claude_desktop_config.json
 
 ## Tools
 
+### Organizations & Fields
+
 | Tool | Description |
 |------|-------------|
-| `jd_list_organizations` | Lists all accessible organizations |
-| `jd_list_fields` | Lists fields for an organization |
-| `jd_get_field` | Gets field details including boundaries |
-| `jd_list_field_operations` | Lists planting/harvest/application operations |
+| `jd_list_organizations` | List all accessible organizations |
+| `jd_list_fields` | List all fields for an organization |
+| `jd_get_field` | Get field details including boundaries |
+| `jd_list_field_operations` | List planting, harvest, and application operations for a field |
+
+### Work Plans
+
+| Tool | Description |
+|------|-------------|
+| `jd_list_work_plans` | List work plans for an organization |
+| `jd_get_work_plan` | Get a single work plan by ERID |
+| `jd_create_work_plan` | Create a planned work plan |
+
+### Equipment & Machine Health
+
+| Tool | Description |
+|------|-------------|
+| `jd_list_equipment` | List equipment for an organization |
+| `jd_get_equipment` | Get equipment details by ID |
+| `jd_get_machine_alerts` | Get machine diagnostic and maintenance alerts |
+| `jd_get_machine_engine_hours` | Get engine hour readings |
+| `jd_get_machine_hours_of_operation` | Get engine state and operation history |
+| `jd_get_machine_location_history` | Get location history or last known position |
+| `jd_get_machine_device_state_reports` | Get terminal and connectivity diagnostics |
+
+### Reference Data
+
+| Tool | Description |
+|------|-------------|
+| `jd_list_products` | List products (chemicals, fertilizers, varieties, etc.) for use in work plans |
+| `jd_list_operators` | List operators available for work plan assignment |
+| `jd_list_guidance_lines` | List guidance lines for a field |
+| `jd_get_guidance_line` | Get a specific guidance line |
 
 ## Commands
 
@@ -82,6 +125,10 @@ Add to your client's MCP config (e.g. Claude Desktop `claude_desktop_config.json
 |---------|-------------|
 | `/jd-fields [org]` | Browse fields in an organization |
 | `/jd-ops [field]` | View field operations data |
+| `/jd-equipment [org]` | Browse equipment and machine health |
+| `/jd-work-plans [org]` | View and manage work plans |
+| `/jd-machine-health [machine]` | Check machine alerts and hours |
+| `/jd-guidance-lines [field]` | View guidance lines for a field |
 
 ## Local Development
 
@@ -112,6 +159,18 @@ For production access, apply through the John Deere developer portal.
 
 ## Required OAuth Scopes
 
-`ag1 ag2 ag3 eq1 eq2 org1 org2 files offline_access`
+The following scopes are requested automatically during the OAuth flow:
 
-These are requested automatically during the OAuth flow.
+| Scope | Purpose |
+|-------|---------|
+| `ag1` | View fields, farms, and clients |
+| `ag2` | Analyze production data |
+| `ag3` | Manage locations and production data |
+| `eq1` | View equipment |
+| `eq2` | View detailed machine measurements |
+| `org1` | View staff, operators, and partners |
+| `org2` | Modify staff, operators, and partners |
+| `work1` | View work and crop plans |
+| `work2` | Create and manage work and crop plans |
+| `files` | Files API access |
+| `offline_access` | Refresh token (prevents re-authentication every 12 hours) |
