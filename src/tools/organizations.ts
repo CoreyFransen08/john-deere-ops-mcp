@@ -2,10 +2,11 @@ import { jdFetchAll } from "../jd-api";
 import type { ToolRegistrationContext } from "./types";
 
 export function registerOrganizationTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_organizations",
-    "List all organizations the authenticated user has access to in John Deere Operations Center.",
-    {},
+    {
+      description: "List all organizations the authenticated user has access to in John Deere Operations Center.",
+    },
     async () => {
       const values = await jdFetchAll<{
         id: string;

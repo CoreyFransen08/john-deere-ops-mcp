@@ -5,15 +5,17 @@ import type { ToolRegistrationContext } from "./types";
 const OPERATOR_FILTERS = ["ACTIVE", "ALL", "ARCHIVED"] as const;
 
 export function registerOperatorTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_operators",
-    "List operators that can be assigned to work plans.",
     {
-      org_id: z.string().describe("The organization ID."),
-      record_filter: z
-        .enum(OPERATOR_FILTERS)
-        .optional()
-        .describe("Filter operators by ACTIVE, ALL, or ARCHIVED."),
+      description: "List operators that can be assigned to work plans.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        record_filter: z
+          .enum(OPERATOR_FILTERS)
+          .optional()
+          .describe("Filter operators by ACTIVE, ALL, or ARCHIVED."),
+      },
     },
     async ({ org_id, record_filter }) => {
       const params = new URLSearchParams();

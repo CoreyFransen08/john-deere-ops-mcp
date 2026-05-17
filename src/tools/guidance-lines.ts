@@ -6,18 +6,20 @@ const GUIDANCE_STATUS = ["available", "archived", "all"] as const;
 const GUIDANCE_RECORD_FILTERS = ["active", "archived", "all"] as const;
 
 export function registerGuidanceLineTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_guidance_lines",
-    "List guidance lines for a field.",
     {
-      org_id: z.string().describe("The organization ID."),
-      field_id: z.string().describe("The field ID."),
-      status: z.enum(GUIDANCE_STATUS).optional().describe("Filter archived guidance lines."),
-      record_filter: z
-        .enum(GUIDANCE_RECORD_FILTERS)
-        .optional()
-        .describe("Filter guidance lines by active, archived, or all."),
-      embed: z.literal("shapes").optional().describe("Include track geometry for supported line types."),
+      description: "List guidance lines for a field.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        field_id: z.string().describe("The field ID."),
+        status: z.enum(GUIDANCE_STATUS).optional().describe("Filter archived guidance lines."),
+        record_filter: z
+          .enum(GUIDANCE_RECORD_FILTERS)
+          .optional()
+          .describe("Filter guidance lines by active, archived, or all."),
+        embed: z.literal("shapes").optional().describe("Include track geometry for supported line types."),
+      },
     },
     async ({ org_id, field_id, status, record_filter, embed }) => {
       const params = new URLSearchParams();
@@ -63,14 +65,16 @@ export function registerGuidanceLineTools({ server, props, env, sql }: ToolRegis
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_guidance_line",
-    "Get a specific guidance line for a field.",
     {
-      org_id: z.string().describe("The organization ID."),
-      field_id: z.string().describe("The field ID."),
-      guidance_line_id: z.string().describe("The guidance line ID."),
-      embed: z.literal("shapes").optional().describe("Include track geometry for supported line types."),
+      description: "Get a specific guidance line for a field.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        field_id: z.string().describe("The field ID."),
+        guidance_line_id: z.string().describe("The guidance line ID."),
+        embed: z.literal("shapes").optional().describe("Include track geometry for supported line types."),
+      },
     },
     async ({ org_id, field_id, guidance_line_id, embed }) => {
       const qs = embed ? `?${new URLSearchParams({ embed }).toString()}` : "";

@@ -3,10 +3,12 @@ import { jdFetch, jdFetchAll } from "../jd-api";
 import type { ToolRegistrationContext } from "./types";
 
 export function registerFieldTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_fields",
-    "List all fields for a given organization.",
-    { org_id: z.string().describe("The organization ID to list fields for.") },
+    {
+      description: "List all fields for a given organization.",
+      inputSchema: { org_id: z.string().describe("The organization ID to list fields for.") },
+    },
     async ({ org_id }) => {
       const values = await jdFetchAll<{ id: string; name: string; archived: boolean }>(
         `/organizations/${org_id}/fields`,
@@ -33,12 +35,14 @@ export function registerFieldTools({ server, props, env, sql }: ToolRegistration
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_field",
-    "Get detailed information about a specific field, including boundaries if available.",
     {
-      org_id: z.string().describe("The organization ID."),
-      field_id: z.string().describe("The field ID."),
+      description: "Get detailed information about a specific field, including boundaries if available.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        field_id: z.string().describe("The field ID."),
+      },
     },
     async ({ org_id, field_id }) => {
       const field = (await jdFetch(
@@ -49,9 +53,7 @@ export function registerFieldTools({ server, props, env, sql }: ToolRegistration
       )) as { links?: Array<{ rel: string; uri: string }>; [key: string]: unknown };
 
       let boundaries: unknown = null;
-      const boundaryLink = (field.links || []).find(
-        (l) => l.rel === "boundaries" || l.rel === "fieldBoundaries"
-      );
+      const boundaryLink = (field.links || []).find((l) => l.rel === "boundaries");
       if (boundaryLink) {
         try {
           boundaries = await jdFetch(boundaryLink.uri, props, env, sql);

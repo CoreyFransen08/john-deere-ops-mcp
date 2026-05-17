@@ -195,24 +195,26 @@ function summarizeWorkPlan(plan: {
 }
 
 export function registerWorkPlanTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_work_plans",
-    "List work plans for an organization, including planned application, seeding, tillage, and harvest work.",
     {
-      org_id: z.string().describe("The organization ID."),
-      year: z.string().optional().describe("Filter by calendar year, e.g. '2026'."),
-      work_type: z
-        .enum(WORK_TYPES)
-        .optional()
-        .describe("Filter by work type: dtiTillage, dtiSeeding, dtiApplication, or dtiHarvest."),
-      work_status: z
-        .enum(WORK_STATUSES)
-        .optional()
-        .describe("Filter by work status: PLANNED, IN_PROGRESS, COMPLETED, or ALL."),
-      field_ids: z
-        .array(z.string())
-        .optional()
-        .describe("Optional list of field IDs to filter work plans."),
+      description: "List work plans for an organization, including planned application, seeding, tillage, and harvest work.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        year: z.string().optional().describe("Filter by calendar year, e.g. '2026'."),
+        work_type: z
+          .enum(WORK_TYPES)
+          .optional()
+          .describe("Filter by work type: dtiTillage, dtiSeeding, dtiApplication, or dtiHarvest."),
+        work_status: z
+          .enum(WORK_STATUSES)
+          .optional()
+          .describe("Filter by work status: PLANNED, IN_PROGRESS, COMPLETED, or ALL."),
+        field_ids: z
+          .array(z.string())
+          .optional()
+          .describe("Optional list of field IDs to filter work plans."),
+      },
     },
     async ({ org_id, year, work_type, work_status, field_ids }) => {
       const params = new URLSearchParams();
@@ -248,12 +250,14 @@ export function registerWorkPlanTools({ server, props, env, sql }: ToolRegistrat
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_work_plan",
-    "Get a single work plan by ERID.",
     {
-      org_id: z.string().describe("The organization ID."),
-      erid: z.string().describe("The work plan ERID."),
+      description: "Get a single work plan by ERID.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        erid: z.string().describe("The work plan ERID."),
+      },
     },
     async ({ org_id, erid }) => {
       const workPlan = await jdFetch(
@@ -270,27 +274,29 @@ export function registerWorkPlanTools({ server, props, env, sql }: ToolRegistrat
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_create_work_plan",
-    "Create a planned John Deere work plan from typed inputs.",
     {
-      org_id: z.string().describe("The organization ID."),
-      field_id: z.string().describe("The field ID where work will be executed."),
-      year: z.number().int().describe("Calendar year for the work plan."),
-      work_type: z.enum(WORK_TYPES).describe("Primary work type for the plan."),
-      operations: z.array(operationSchema).min(1).max(2).describe("One or two operations for the work plan."),
-      work_plan_assignments: z
-        .array(assignmentSchema)
-        .optional()
-        .describe("Optional machine/operator/implement assignments."),
-      guidance_line_id: z.string().optional().describe("Optional guidance line ID to include in guidanceSettings."),
-      guidance_line_uri: z.string().optional().describe("Optional full guidance line URI."),
-      guidance_settings: z
-        .record(z.unknown())
-        .optional()
-        .describe("Advanced raw John Deere guidanceSettings object. Takes precedence over guidance_line_id."),
-      work_order: z.string().max(255).optional().describe("Optional work order text."),
-      instructions: z.string().max(255).optional().describe("Optional operator instructions."),
+      description: "Create a planned John Deere work plan from typed inputs.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        field_id: z.string().describe("The field ID where work will be executed."),
+        year: z.number().int().describe("Calendar year for the work plan."),
+        work_type: z.enum(WORK_TYPES).describe("Primary work type for the plan."),
+        operations: z.array(operationSchema).min(1).max(2).describe("One or two operations for the work plan."),
+        work_plan_assignments: z
+          .array(assignmentSchema)
+          .optional()
+          .describe("Optional machine/operator/implement assignments."),
+        guidance_line_id: z.string().optional().describe("Optional guidance line ID to include in guidanceSettings."),
+        guidance_line_uri: z.string().optional().describe("Optional full guidance line URI."),
+        guidance_settings: z
+          .record(z.unknown())
+          .optional()
+          .describe("Advanced raw John Deere guidanceSettings object. Takes precedence over guidance_line_id."),
+        work_order: z.string().max(255).optional().describe("Optional work order text."),
+        instructions: z.string().max(255).optional().describe("Optional operator instructions."),
+      },
     },
     async ({
       org_id,

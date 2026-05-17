@@ -14,15 +14,17 @@ const PRODUCT_ENDPOINTS: Record<(typeof PRODUCT_TYPES)[number], string> = {
 };
 
 export function registerProductTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_products",
-    "List organization products that can be referenced by work plan inputs.",
     {
-      org_id: z.string().describe("The organization ID."),
-      product_type: z
-        .enum(PRODUCT_TYPES)
-        .describe("Product type: CHEMICAL, FERTILIZER, VARIETY, TANK_MIX, or DRY_BLEND."),
-      status: z.enum(PRODUCT_STATUSES).optional().describe("Filter products by archive status."),
+      description: "List organization products that can be referenced by work plan inputs.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        product_type: z
+          .enum(PRODUCT_TYPES)
+          .describe("Product type: CHEMICAL, FERTILIZER, VARIETY, TANK_MIX, or DRY_BLEND."),
+        status: z.enum(PRODUCT_STATUSES).optional().describe("Filter products by archive status."),
+      },
     },
     async ({ org_id, product_type, status }) => {
       const params = new URLSearchParams();

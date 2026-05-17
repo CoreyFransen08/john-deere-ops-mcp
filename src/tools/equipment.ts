@@ -56,23 +56,25 @@ function summarizeEquipment(item: {
 }
 
 export function registerEquipmentTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_equipment",
-    "List equipment visible to the authenticated user.",
     {
-      org_id: z.string().describe("The organization ID."),
-      category: z.enum(EQUIPMENT_CATEGORIES).optional().describe("Filter by Machine or Implement."),
-      archived: z.boolean().optional().describe("Filter archived equipment."),
-      ids: z.array(z.string()).optional().describe("Filter by organization equipment IDs."),
-      serial_numbers: z.array(z.string()).optional().describe("Filter by serial numbers."),
-      principal_ids: z.array(z.string()).optional().describe("Filter by principal IDs."),
-      capable_of: z.enum(CAPABILITIES).optional().describe("Filter by Connectivity or !Connectivity."),
-      organization_role_type: z
-        .enum(ORGANIZATION_ROLE_TYPES)
-        .optional()
-        .describe("Filter by Controlling or NonControlling organization role."),
-      embed: z.enum(EQUIPMENT_EMBEDS).optional().describe("Optional equipment embed."),
-      item_limit: z.number().int().positive().max(5000).optional().describe("Maximum page size."),
+      description: "List equipment visible to the authenticated user.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        category: z.enum(EQUIPMENT_CATEGORIES).optional().describe("Filter by Machine or Implement."),
+        archived: z.boolean().optional().describe("Filter archived equipment."),
+        ids: z.array(z.string()).optional().describe("Filter by organization equipment IDs."),
+        serial_numbers: z.array(z.string()).optional().describe("Filter by serial numbers."),
+        principal_ids: z.array(z.string()).optional().describe("Filter by principal IDs."),
+        capable_of: z.enum(CAPABILITIES).optional().describe("Filter by Connectivity or !Connectivity."),
+        organization_role_type: z
+          .enum(ORGANIZATION_ROLE_TYPES)
+          .optional()
+          .describe("Filter by Controlling or NonControlling organization role."),
+        embed: z.enum(EQUIPMENT_EMBEDS).optional().describe("Optional equipment embed."),
+        item_limit: z.number().int().positive().max(5000).optional().describe("Maximum page size."),
+      },
     },
     async ({
       org_id,
@@ -122,12 +124,14 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_equipment",
-    "Get equipment details by equipment ID.",
     {
-      equipment_id: z.string().describe("The equipment ID."),
-      embed: z.enum(EQUIPMENT_DETAIL_EMBEDS).optional().describe("Optional equipment detail embed."),
+      description: "Get equipment details by equipment ID.",
+      inputSchema: {
+        equipment_id: z.string().describe("The equipment ID."),
+        embed: z.enum(EQUIPMENT_DETAIL_EMBEDS).optional().describe("Optional equipment detail embed."),
+      },
     },
     async ({ equipment_id, embed }) => {
       const params = new URLSearchParams();
@@ -147,14 +151,16 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_machine_alerts",
-    "Get machine alerts, including diagnostic and maintenance alert types. Date windows should be at most seven days.",
     {
-      principal_id: z.string().describe("Machine principal ID."),
-      start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
-      end_date: z.string().optional().describe("End date/time in UTC ISO format."),
-      exclude_acknowledged: z.boolean().optional().describe("Exclude acknowledged alerts."),
+      description: "Get machine alerts, including diagnostic and maintenance alert types. Date windows should be at most seven days.",
+      inputSchema: {
+        principal_id: z.string().describe("Machine principal ID."),
+        start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
+        end_date: z.string().optional().describe("End date/time in UTC ISO format."),
+        exclude_acknowledged: z.boolean().optional().describe("Exclude acknowledged alerts."),
+      },
     },
     async ({ principal_id, start_date, end_date, exclude_acknowledged }) => {
       const params = new URLSearchParams();
@@ -181,14 +187,16 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_machine_engine_hours",
-    "Get machine engine hour readings.",
     {
-      principal_id: z.string().describe("Machine principal ID."),
-      start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
-      end_date: z.string().optional().describe("End date/time in UTC ISO format."),
-      last_known: z.boolean().optional().describe("Return only the last known engine hour reading."),
+      description: "Get machine engine hour readings.",
+      inputSchema: {
+        principal_id: z.string().describe("Machine principal ID."),
+        start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
+        end_date: z.string().optional().describe("End date/time in UTC ISO format."),
+        last_known: z.boolean().optional().describe("Return only the last known engine hour reading."),
+      },
     },
     async ({ principal_id, start_date, end_date, last_known }) => {
       const params = new URLSearchParams();
@@ -218,16 +226,18 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_machine_hours_of_operation",
-    "Get machine hours of operation and engine state history.",
     {
-      principal_id: z.string().describe("Machine principal ID."),
-      org_id: z.string().optional().describe("Organization ID for the machine."),
-      start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
-      end_date: z.string().optional().describe("End date/time in UTC ISO format."),
-      detailed_state: z.string().optional().describe("Optional Deere detailed state filter."),
-      summarize_duration: z.string().optional().describe("Optional duration merge threshold."),
+      description: "Get machine hours of operation and engine state history.",
+      inputSchema: {
+        principal_id: z.string().describe("Machine principal ID."),
+        org_id: z.string().optional().describe("Organization ID for the machine."),
+        start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
+        end_date: z.string().optional().describe("End date/time in UTC ISO format."),
+        detailed_state: z.string().optional().describe("Optional Deere detailed state filter."),
+        summarize_duration: z.string().optional().describe("Optional duration merge threshold."),
+      },
     },
     async ({ principal_id, org_id, start_date, end_date, detailed_state, summarize_duration }) => {
       const params = new URLSearchParams();
@@ -259,14 +269,16 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_machine_location_history",
-    "Get machine location history. Date ranges should be at most one month.",
     {
-      principal_id: z.string().describe("Machine principal ID."),
-      start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
-      end_date: z.string().optional().describe("End date/time in UTC ISO format."),
-      last_known: z.boolean().optional().describe("Return last known location."),
+      description: "Get machine location history. Date ranges should be at most one month.",
+      inputSchema: {
+        principal_id: z.string().describe("Machine principal ID."),
+        start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
+        end_date: z.string().optional().describe("End date/time in UTC ISO format."),
+        last_known: z.boolean().optional().describe("Return last known location."),
+      },
     },
     async ({ principal_id, start_date, end_date, last_known }) => {
       const params = new URLSearchParams();
@@ -296,14 +308,16 @@ export function registerEquipmentTools({ server, props, env, sql }: ToolRegistra
     }
   );
 
-  server.tool(
+  server.registerTool(
     "jd_get_machine_device_state_reports",
-    "Get machine terminal device state reports.",
     {
-      principal_id: z.string().describe("Machine principal ID."),
-      start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
-      end_date: z.string().optional().describe("End date/time in UTC ISO format."),
-      last_known: z.boolean().optional().describe("Return last known device state report."),
+      description: "Get machine terminal device state reports.",
+      inputSchema: {
+        principal_id: z.string().describe("Machine principal ID."),
+        start_date: z.string().optional().describe("Start date/time in UTC ISO format."),
+        end_date: z.string().optional().describe("End date/time in UTC ISO format."),
+        last_known: z.boolean().optional().describe("Return last known device state report."),
+      },
     },
     async ({ principal_id, start_date, end_date, last_known }) => {
       const params = new URLSearchParams();

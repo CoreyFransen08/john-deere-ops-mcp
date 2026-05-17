@@ -3,17 +3,19 @@ import { jdFetchAll } from "../jd-api";
 import type { ToolRegistrationContext } from "./types";
 
 export function registerFieldOperationTools({ server, props, env, sql }: ToolRegistrationContext) {
-  server.tool(
+  server.registerTool(
     "jd_list_field_operations",
-    "List field operations (planting, harvesting, applications) for a specific field.",
     {
-      org_id: z.string().describe("The organization ID."),
-      field_id: z.string().describe("The field ID."),
-      crop_season: z.string().optional().describe("Filter by crop season year (e.g. '2024')."),
-      operation_type: z
-        .string()
-        .optional()
-        .describe("Filter by operation type: APPLICATION, HARVEST, SEEDING, or TILLAGE."),
+      description: "List field operations (planting, harvesting, applications) for a specific field.",
+      inputSchema: {
+        org_id: z.string().describe("The organization ID."),
+        field_id: z.string().describe("The field ID."),
+        crop_season: z.string().optional().describe("Filter by crop season year (e.g. '2024')."),
+        operation_type: z
+          .string()
+          .optional()
+          .describe("Filter by operation type: APPLICATION, HARVEST, SEEDING, or TILLAGE."),
+      },
     },
     async ({ org_id, field_id, crop_season, operation_type }) => {
       const params = new URLSearchParams();

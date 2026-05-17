@@ -30,7 +30,7 @@ export class JohnDeereMCP extends McpAgent<Env, Record<string, never>, JDProps> 
 
     registerJohnDeereTools({
       server: this.server,
-      props: this.props,
+      props: this.props!,
       env: this.env,
       sql: this.sql.bind(this),
     });

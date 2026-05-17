@@ -11,8 +11,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const wranglerConfigPath = resolve(repoRoot, "wrangler.jsonc");
 const packageJsonPath = resolve(repoRoot, "package.json");
-const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+const isWin = process.platform === "win32";
+const npmCmd = isWin ? "npm.cmd" : "npm";
+const npxCmd = isWin ? "npx.cmd" : "npx";
+const shell = isWin;
 
 function header(text) {
 	console.log(`\n── ${text} ──`);
@@ -28,7 +30,7 @@ function runInherit(cmd, args, opts = {}) {
 	const result = spawnSync(cmd, args, {
 		cwd: repoRoot,
 		stdio: "inherit",
-		shell: false,
+		shell,
 		...opts,
 	});
 	if (result.status !== 0) {
@@ -40,7 +42,7 @@ function runCapture(cmd, args) {
 	const result = spawnSync(cmd, args, {
 		cwd: repoRoot,
 		encoding: "utf8",
-		shell: false,
+		shell,
 	});
 	if (result.status !== 0) {
 		fail(
@@ -56,7 +58,7 @@ function runTee(cmd, args) {
 		const child = spawn(cmd, args, {
 			cwd: repoRoot,
 			stdio: ["inherit", "pipe", "pipe"],
-			shell: false,
+			shell,
 		});
 		let stdoutBuf = "";
 		let stderrBuf = "";
@@ -81,7 +83,7 @@ function pipeStdinValue(cmd, args, value) {
 		const child = spawn(cmd, args, {
 			cwd: repoRoot,
 			stdio: ["pipe", "inherit", "inherit"],
-			shell: false,
+			shell,
 		});
 		child.stdin.write(value);
 		child.stdin.write("\n");
@@ -105,8 +107,9 @@ async function promptMasked(question) {
 		input.resume();
 		input.setEncoding("utf8");
 		let buf = "";
-		const onData = (ch) => {
-			switch (ch) {
+		const onData = (chunk) => {
+			for (const ch of chunk) {
+				switch (ch) {
 				case "\n":
 				case "\r":
 				case "":
@@ -126,10 +129,11 @@ async function promptMasked(question) {
 						buf = buf.slice(0, -1);
 						process.stdout.write("\b \b");
 					}
-					return;
+					break;
 				default:
 					buf += ch;
 					process.stdout.write("*");
+				}
 			}
 		};
 		input.on("data", onData);
@@ -183,18 +187,36 @@ async function main() {
 	runInherit(npxCmd, ["wrangler", "login"]);
 
 	header("3/6 Creating KV namespace (OAUTH_KV)");
-	const kvOut = runCapture(npxCmd, [
-		"wrangler",
-		"kv",
-		"namespace",
-		"create",
-		"OAUTH_KV",
-	]);
-	process.stdout.write(kvOut);
-	const kvId = extractKvId(kvOut);
+	const kvCreate = spawnSync(npxCmd, ["wrangler", "kv", "namespace", "create", "OAUTH_KV"], {
+		cwd: repoRoot,
+		encoding: "utf8",
+		shell,
+	});
+
+	let kvId;
+	if (kvCreate.status === 0) {
+		process.stdout.write(kvCreate.stdout);
+		kvId = extractKvId(kvCreate.stdout);
+	} else if ((kvCreate.stderr + kvCreate.stdout).includes("already exists")) {
+		console.log("KV namespace already exists — reusing existing ID…");
+		const listOut = runCapture(npxCmd, ["wrangler", "kv", "namespace", "list"]);
+		try {
+			const namespaces = JSON.parse(listOut.trim());
+			const match = namespaces.find((ns) => ns.title?.includes("OAUTH_KV"));
+			if (match) kvId = match.id;
+		} catch {
+			kvId = extractKvId(listOut);
+		}
+	} else {
+		fail(
+			`\`${npxCmd} wrangler kv namespace create OAUTH_KV\` exited with code ${kvCreate.status}`,
+			kvCreate.stderr || kvCreate.stdout,
+		);
+	}
+
 	if (!kvId) {
 		fail(
-			"Could not parse the new KV namespace id from Wrangler output.",
+			"Could not parse the KV namespace id from Wrangler output.",
 			"Paste the id into wrangler.jsonc under the OAUTH_KV binding manually, then re-run setup skipping this step.",
 		);
 	}
@@ -260,6 +282,10 @@ async function main() {
 				null,
 				2,
 			),
+		);
+		console.log("\nTest with MCP Inspector (Streamable HTTP):");
+		console.log(
+			`  npx @modelcontextprotocol/inspector --url ${workerUrl}/mcp --transport http-stream`,
 		);
 	} else {
 		console.log(

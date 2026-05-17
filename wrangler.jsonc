@@ -1,10 +1,13 @@
 {
-	"name": "john-deere-mcp",
+	"name": "john-deere-mcp1",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-04-01",
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"alias": {
+		"ai": "./src/shims/ai.ts"
+	},
 	"durable_objects": {
 		"bindings": [
 			{

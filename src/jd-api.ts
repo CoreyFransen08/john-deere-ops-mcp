@@ -265,7 +265,19 @@ export async function jdFetchAll<T>(
   sql: SqlTagFn,
   options: FetchOptions = {}
 ): Promise<T[]> {
-  let url = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
+  const baseUrl = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
+  const shouldUseCache = options.cache !== false && isCacheable(baseUrl);
+  const aggregateCacheKey = `fetchAll:${baseUrl}`;
+
+  if (shouldUseCache) {
+    const cached = getCached(sql, aggregateCacheKey);
+    if (cached) {
+      console.log(`[jdFetchAll] aggregate cache HIT for ${baseUrl}`);
+      return cached as T[];
+    }
+  }
+
+  let url = baseUrl;
   const allValues: T[] = [];
   let page = 0;
 
@@ -299,5 +311,10 @@ export async function jdFetchAll<T>(
   }
 
   console.log(`[jdFetchAll] done. Total items collected: ${allValues.length}`);
+
+  if (shouldUseCache) {
+    setCache(sql, aggregateCacheKey, allValues, options.ttlMs);
+  }
+
   return allValues;
 }
