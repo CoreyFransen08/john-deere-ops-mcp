@@ -13,61 +13,44 @@ This means authentication happens at the transport layer — no manual auth tool
 
 ## Setup
 
-### 1. Cloudflare Account & Wrangler CLI
+### Quick setup (recommended)
 
-1. **Create a Cloudflare account** (if you don’t have one):
-   - Go to [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up) and sign up.
-   - Verify your email and complete account setup.
+Prerequisites: a Cloudflare account, a John Deere developer account, and Node.js installed locally.
 
-2. **Install the Wrangler CLI** (Cloudflare’s Workers CLI):
+1. Clone the repo and `cd` into it.
+2. Run:
    ```bash
-   npm install -g wrangler
-   ```
-   Or use it via `npx` (no global install):
-   ```bash
-   npx wrangler --version
+   npm run setup
    ```
 
-3. **Log in to Cloudflare** from the terminal:
-   ```bash
-   npx wrangler login
-   ```
-   This opens a browser to authenticate Wrangler with your Cloudflare account.
+The setup script will:
 
-### 2. Register a John Deere Developer Application
+- install dependencies (which provides the Wrangler CLI),
+- run `wrangler login` to authenticate you with Cloudflare,
+- create the `OAUTH_KV` namespace and patch its id into `wrangler.jsonc`,
+- prompt you for your John Deere **Client ID** and **Client Secret** and push them to Cloudflare as secrets (along with an auto-generated `COOKIE_ENCRYPTION_KEY`),
+- run `wrangler deploy`,
+- print the MCP endpoint URL (`https://…/mcp`) and the redirect URI you must register at developer.deere.com (`https://…/callback`).
 
-1. Go to [developer.deere.com](https://developer.deere.com) and sign in.
-2. Create a new application under **My Applications**.
-3. Add your Worker's callback URL as a **Redirect URI**:
-   ```
-   https://john-deere-mcp.<your-subdomain>.workers.dev/callback
-   ```
-4. Copy your **Application ID** (Client ID) and **Secret** (Client Secret).
+Before the deployed Worker can complete an OAuth flow, register the printed `/callback` URL at [developer.deere.com](https://developer.deere.com) under **My Applications → your app → Redirect URIs**.
 
-### 3. Create the KV Namespace
+### Manual setup
 
-```bash
-npx wrangler kv namespace create OAUTH_KV
-```
-
-Copy the output `id` into `wrangler.jsonc` under `kv_namespaces`.
-
-### 4. Set Secrets
-
-```bash
-npx wrangler secret put JD_CLIENT_ID
-npx wrangler secret put JD_CLIENT_SECRET
-npx wrangler secret put COOKIE_ENCRYPTION_KEY
-```
-
-For local development, copy `.dev.vars.example` to `.dev.vars` and fill in the values.
-
-### 5. Install & Deploy
+If you'd rather run each step yourself, the equivalent commands are:
 
 ```bash
 npm install
+npx wrangler login
+npx wrangler kv namespace create OAUTH_KV   # paste the id into wrangler.jsonc
+npx wrangler secret put JD_CLIENT_ID
+npx wrangler secret put JD_CLIENT_SECRET
+npx wrangler secret put COOKIE_ENCRYPTION_KEY
 npm run deploy
 ```
+
+Register a John Deere application at [developer.deere.com](https://developer.deere.com), copy the Application ID/Secret into the `wrangler secret put` prompts, and add `https://john-deere-mcp.<your-subdomain>.workers.dev/callback` as a redirect URI on the app.
+
+For local development, copy `.dev.vars.example` to `.dev.vars` and fill in the values.
 
 ### 6. Connect an MCP Client
 
