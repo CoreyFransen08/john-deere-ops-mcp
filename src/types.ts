@@ -4,6 +4,7 @@ export interface Env {
   JD_CLIENT_ID: string;
   JD_CLIENT_SECRET: string;
   COOKIE_ENCRYPTION_KEY: string;
+  API_ALLOWED_ORIGINS?: string;
 }
 
 export type JDProps = {

@@ -11,7 +11,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpAgent } from "agents/mcp";
 import type { Env, JDProps } from "./types";
 import { initCacheTable } from "./jd-api";
-import { JDAuthHandler } from "./jd-auth-handler";
+import { DefaultHandler } from "./api/app";
 import { registerJohnDeereTools } from "./tools";
 
 // ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ export class JohnDeereMCP extends McpAgent<Env, Record<string, never>, JDProps> 
 export default new OAuthProvider({
   apiRoute: "/mcp",
   apiHandler: JohnDeereMCP.serve("/mcp"),
-  defaultHandler: JDAuthHandler as unknown as ExportedHandler,
+  defaultHandler: DefaultHandler as unknown as ExportedHandler,
   authorizeEndpoint: "/authorize",
   tokenEndpoint: "/token",
   clientRegistrationEndpoint: "/register",

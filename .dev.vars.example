@@ -4,3 +4,6 @@ JD_CLIENT_SECRET=your-application-secret
 
 # Used for signing session cookies (generate a random 32+ char string)
 COOKIE_ENCRYPTION_KEY=generate-a-random-secret-string-here
+
+# Optional comma-separated browser origins for the REST API CORS and OAuth returnTo allowlist
+API_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:8787
