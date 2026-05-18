@@ -255,6 +255,55 @@ export async function jdRequest<T = unknown>(
 }
 
 /**
+ * Upload binary content (PUT /files/{fileId}). Streams the body to JD.
+ * Retries once on 401 after refreshing the token.
+ */
+export async function jdUpload(
+  path: string,
+  props: JDProps,
+  env: Env,
+  body: ArrayBuffer | ReadableStream | Uint8Array,
+  contentType: string
+): Promise<JDRequestResult<null>> {
+  const url = path.startsWith("http") ? path : `${JD_API_BASE}${path}`;
+  console.log(`[jdUpload] PUT ${url} (${contentType})`);
+
+  const makeRequest = () =>
+    fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${props.accessToken}`,
+        Accept: JD_ACCEPT,
+        "Content-Type": contentType,
+      },
+      body: body as BodyInit,
+      ...(body instanceof ReadableStream ? { duplex: "half" } : {}),
+    } as RequestInit);
+
+  let res = await makeRequest();
+  console.log(`[jdUpload] response status: ${res.status} ${res.statusText}`);
+
+  if (res.status === 401 && props.refreshToken && !(body instanceof ReadableStream)) {
+    try {
+      const refreshed = await refreshAccessToken(props, env);
+      props.accessToken = refreshed.access_token;
+      res = await makeRequest();
+      console.log(`[jdUpload] retry status: ${res.status} ${res.statusText}`);
+    } catch {
+      throw new Error("Session expired. Please re-authenticate.");
+    }
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[jdUpload] ERROR ${res.status}: ${text}`);
+    throw new Error(`John Deere upload error (${res.status}): ${text}`);
+  }
+
+  return { status: res.status, location: res.headers.get("Location"), data: null };
+}
+
+/**
  * Auto-paginating fetch for John Deere list endpoints.
  * Follows HATEOAS `nextPage` links and merges all `values` arrays.
  */

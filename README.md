@@ -119,6 +119,19 @@ Add to your MCP client config (e.g. Claude Desktop `claude_desktop_config.json`)
 | `jd_list_guidance_lines` | List guidance lines for a field |
 | `jd_get_guidance_line` | Get a specific guidance line |
 
+### Files & Transfers
+
+| Tool | Description |
+|------|-------------|
+| `jd_list_org_files` | List files in an organization (setup, prescription, boundary zips, etc.) |
+| `jd_get_file` | Get metadata for a single file, including links to machines it can be sent to |
+| `jd_create_file` | Create a file ID in an organization. Returns the new fileId for upload |
+| `jd_upload_file_bytes` | Upload binary content (base64) to a file ID |
+| `jd_transfer_file_to_machine` | Send a file to a piece of equipment over the air |
+| `jd_get_file_transfer` | Poll the status of a file-to-machine transfer |
+
+In addition, a browser utility page lives at `https://<worker>.<subdomain>.workers.dev/file-tool` — drop a zip in, let Ops Center round-trip it, then download or push to a machine. Useful for older controllers (e.g. JD 2630) that are picky about USB-formatted RX/boundary zips.
+
 ## Commands
 
 | Command | Description |

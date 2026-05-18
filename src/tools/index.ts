@@ -1,6 +1,7 @@
 import { registerEquipmentTools } from "./equipment";
 import { registerFieldOperationTools } from "./field-operations";
 import { registerFieldTools } from "./fields";
+import { registerFileTools } from "./files";
 import { registerGuidanceLineTools } from "./guidance-lines";
 import { registerOrganizationTools } from "./organizations";
 import { registerOperatorTools } from "./operators";
@@ -17,4 +18,5 @@ export function registerJohnDeereTools(context: ToolRegistrationContext) {
   registerEquipmentTools(context);
   registerOperatorTools(context);
   registerWorkPlanTools(context);
+  registerFileTools(context);
 }
